@@ -954,8 +954,8 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
       <span>⚙️</span>
       <span>
         <strong>Gestione Catalogo:</strong> clicca <em>"+ Aggiungi Creazione"</em> per inserire le tue creazioni.
-        Scegli il colore accent, carica la foto e compila i dettagli. I prodotti vengono salvati nel browser.
-        Usa la <em>×</em> su ogni card per rimuoverla.
+        Carica la foto su Cloudinary, copia il link e incollalo nel campo "URL foto".
+        I prodotti vengono salvati su Supabase e sono visibili a tutti. Usa la <em>×</em> su ogni card per rimuoverla.
       </span>
     </div>
 
@@ -1276,23 +1276,56 @@ const ACCENT_COLORS={
   'var(--amber)':'#e8a840','var(--cobalt)':'#4a7fd4','var(--sage)':'#72b07a','var(--gold)':'#c8a46e'
 };
 
-const DEFAULTS=[
-  {id:'d1',nome:'Rosa & Lampone',   cat:'stagionali', prezzo:'€ 3,50/pz', desc:'Ganache fondente con coulis di lampone fresco e petali di rosa cristallizzati. Copertura ruby.',  badge:'default',badgeText:'Best Seller',color:'#e8647a',img:'https://images.unsplash.com/photo-1548907040-4baa42d10919?w=600&q=80&fm=jpg'},
-  {id:'d2',nome:'Passion & Mango',  cat:'stagionali', prezzo:'€ 3,50/pz', desc:'Ganache al frutto della passione del Madagascar su base di mango disidratato caramellato.',       badge:'new',    badgeText:'Nuovo',       color:'#e8a840',img:'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80&fm=jpg'},
-  {id:'d3',nome:'Matcha Cèremonie', cat:'alcoliche',  prezzo:'€ 4,00/pz', desc:'Thé Matcha di prima raccolta uji giapponese in ganache bianca. Lucida, brillante, intensa.',       badge:'limited', badgeText:'Limited Ed.', color:'#72b07a',img:'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=600&q=80&fm=jpg'},
-  {id:'d4',nome:'Pralinato Piemonte',cat:'classiche',  prezzo:'€ 3,00/pz', desc:'Pralinato croccante alle nocciole IGP del Piemonte, fondente 72%. Un classico intramontabile.',  badge:'',       badgeText:'',           color:'#c8a46e',img:'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600&q=80&fm=jpg'},
-  {id:'d5',nome:'Violette de Parme',cat:'alcoliche',  prezzo:'€ 4,00/pz', desc:'Ganache bianca con olio essenziale di violetta, copertura in cioccolato latte Ghana.',              badge:'',       badgeText:'',           color:'#9b6fc4',img:'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600&q=80&fm=jpg'},
-  {id:'d6',nome:'Coffret 9 Creazioni', cat:'candy',  prezzo:'€ 28,00',   desc:'Nove creazioni assortite nelle collezioni Classiche e Stagionali, in scatola regalo rilegata a mano.',badge:'custom', badgeText:'Regalo',      color:'#e8647a',img:'https://images.unsplash.com/photo-1582542544851-bf3d03b53625?w=600&q=80&fm=jpg'},
-];
+// ═══ SUPABASE CONFIG ═══
+const SB_URL = "https://zkyanislzzyhlgulnrgr.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpre WFuaXNsenp5aGxndWxucmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2NTIyMDIsImV4cCI6MjA1NzIyODIwMn0";
 
-function load(){try{const s=localStorage.getItem('acv3');return s?JSON.parse(s):DEFAULTS}catch{return DEFAULTS}}
-function save(a){try{localStorage.setItem('acv3',JSON.stringify(a))}catch{}}
-let products=load(), curFilter='all';
+async function sbFetch(path, opts={}) {
+  const res = await fetch(SB_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation'
+    },
+    ...opts
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return res.status === 204 ? null : res.json();
+}
+
+async function loadProducts() {
+  return sbFetch('prodotti?select=*&visibile=eq.true&order=created_at.desc');
+}
+async function insertProduct(p) {
+  return sbFetch('prodotti', {method:'POST', body:JSON.stringify(p)});
+}
+async function deleteProduct(id) {
+  return sbFetch('prodotti?id=eq.' + id, {method:'DELETE', prefer:''});
+}
+
+let products=[], curFilter='all';
+
+async function initCatalog() {
+  const grid = document.getElementById('pGrid');
+  grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-d)">Caricamento creazioni...</div>';
+  try {
+    products = await loadProducts();
+    renderGrid();
+  } catch(e) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-d)">Catalogo non disponibile al momento.</div>';
+  }
+}
 
 function catLabel(c){return{classiche:'Classiche',stagionali:'Stagionali',alcoliche:'Alcoliche',candy:'Candy & Snack'}[c]||c}
 function badgeClass(b){return b||'default'}
 
 function cardHTML(p){
+  // Normalizza campi Supabase → UI
+  if(!p.img && p.foto_url) p.img = p.foto_url;
+  if(!p.desc && p.descrizione) p.desc = p.descrizione;
+  if(!p.cat && p.categoria) p.cat = p.categoria;
+  if(!p.color) p.color = '#c8a46e';
   const hasImg=p.img&&p.img.trim();
   const show=curFilter==='all'||p.cat===curFilter;
   const noPhotoSVG='<svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="12" width="36" height="26" rx="4" stroke="currentColor" stroke-width="1.5" opacity=".3"/><circle cx="24" cy="25" r="7" stroke="currentColor" stroke-width="1.5" opacity=".3"/><circle cx="36" cy="16" r="3" fill="currentColor" opacity=".3"/></svg>';
@@ -1344,9 +1377,13 @@ document.querySelectorAll('.fb').forEach(b=>{
   });
 });
 
-function delProduct(id){
+async function delProduct(id){
   if(!confirm('Rimuovere questa creazione?'))return;
-  products=products.filter(p=>p.id!==id);save(products);renderGrid();
+  try {
+    await deleteProduct(id);
+    products=products.filter(p=>p.id!==id);
+    renderGrid();
+  } catch(e) { alert('Errore durante la rimozione.'); }
 }
 // ═══ CARRELLO MULTI-PRODOTTO ═══
 let cart = [];
@@ -1397,7 +1434,7 @@ function goToOrder(){
   if(s) window.scrollTo({top:s.getBoundingClientRect().top+scrollY-72,behavior:'smooth'});
 }
 
-renderGrid();
+initCatalog();
 
 /* ═══ MODAL ═══ */
 const mbg=document.getElementById('mbg');
@@ -1436,7 +1473,7 @@ document.getElementById('imgUrl').addEventListener('input',function(){
 });
 
 /* submit prodotto */
-document.getElementById('pForm').addEventListener('submit',function(e){
+document.getElementById('pForm').addEventListener('submit',async function(e){
   e.preventDefault();
   const nome=document.getElementById('pNome').value.trim();
   const cat=document.getElementById('pCat').value;
@@ -1445,16 +1482,19 @@ document.getElementById('pForm').addEventListener('submit',function(e){
   const badgeSel=document.getElementById('pBadge').value;
   const badgeTxt=document.getElementById('pBadgeTxt').value.trim();
   const defaultBadgeLabels={default:'Best Seller',new:'Nuovo',limited:'Limited Ed.',custom:'Su Misura'};
-  products.unshift({
-    id:'p'+Date.now(),nome,cat,
+  const newProd = {
+    nome, cat,
     prezzo:document.getElementById('pPrezzo').value.trim(),
-    desc:document.getElementById('pDesc').value.trim(),
-    badge:badgeSel,
-    badgeText:badgeTxt||(badgeSel?defaultBadgeLabels[badgeSel]||'':''),
-    color:selColor,
-    img:uploadedData||imgUrl||''
-  });
-  save(products);renderGrid();closeM();
+    descrizione:document.getElementById('pDesc').value.trim(),
+    categoria:cat,
+    foto_url:imgUrl||'',
+    visibile:true
+  };
+  try {
+    const saved = await insertProduct(newProd);
+    if(saved && saved[0]) products.unshift({...saved[0], desc:saved[0].descrizione, img:saved[0].foto_url, color:'#c8a46e', badge:'', badgeText:''});
+    renderGrid();closeM();
+  } catch(e) { alert('Errore durante il salvataggio: ' + e.message); return; }
   this.reset();uploadedData='';selColor='#e8647a';
   document.querySelectorAll('.cp-item').forEach((x,i)=>x.classList.toggle('sel',i===0));
   imgPreviewReset();
