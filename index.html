@@ -409,8 +409,9 @@ header.solid{background:rgba(18,52,60,.95);backdrop-filter:blur(24px);border-bot
 .cart-badge-lbl{font-size:.42rem;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
 
 /* delete button */
-.del-btn{position:absolute;top:.8rem;right:.8rem;z-index:10;background:rgba(15,45,52,.7);color:rgba(245,238,223,.5);border:1px solid rgba(255,255,255,.12);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:all .2s;backdrop-filter:blur(4px);cursor:pointer}
+.del-btn{position:absolute;top:.8rem;right:.8rem;z-index:10;background:rgba(15,45,52,.7);color:rgba(245,238,223,.5);border:1px solid rgba(255,255,255,.12);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:all .2s;backdrop-filter:blur(4px);cursor:pointer;display:none}
 .del-btn:hover{background:rgba(184,50,50,.8);color:#fff;border-color:transparent}
+body.admin-mode .del-btn{display:flex}
 
 /* add button */
 .cat-add-wrap{text-align:center;margin-bottom:1rem}
@@ -641,6 +642,14 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
 }
 .adm-save-all:hover{filter:brightness(1.1)}
 .adm-tip{font-size:.58rem;color:rgba(245,238,223,.22);letter-spacing:.08em;line-height:1.8}
+.adm-tab{background:none;border:none;color:rgba(245,238,223,.35);font-family:var(--sans);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;padding:.9rem 1.5rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s}
+.adm-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.adm-tab:hover{color:var(--cream)}
+.adm-hero-field{display:flex;flex-direction:column;gap:.4rem}
+.adm-hero-field label{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,164,110,.6)}
+.adm-hero-field input{background:rgba(255,255,255,.05);border:1px solid rgba(200,164,110,.2);border-radius:6px;padding:.6rem .9rem;color:var(--cream);font-size:.8rem;outline:none;transition:border-color .2s}
+.adm-hero-field input:focus{border-color:rgba(200,164,110,.5)}
+.adm-hero-preview{width:100%;height:80px;border-radius:6px;object-fit:cover;margin-top:.4rem;opacity:.8;display:none}
 #admToast{
   position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(16px);
   background:var(--bg3);border:1px solid rgba(200,164,110,.3);border-radius:8px;
@@ -1532,20 +1541,39 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
     <button class="adm-close" id="admClose" aria-label="Chiudi">✕</button>
   </div>
 
-  <div class="adm-body" id="admBody">
-    <!-- Le card vengono generate via JS -->
+  <!-- Tab switcher -->
+  <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,164,110,.15);padding:0 2.5rem">
+    <button class="adm-tab on" id="tabHero" onclick="admShowTab('hero')">🖼 Foto Hero</button>
+    <button class="adm-tab" id="tabLogo" onclick="admShowTab('logo')">📷 Foto Collage</button>
   </div>
 
-  <div class="adm-footer">
-    <div class="adm-tip">
-      🔒 Accesso: clicca <strong>5 volte</strong> sul logo in alto a sinistra<br>
-      Le foto vengono salvate nel browser
+  <!-- Sezione Hero URLs -->
+  <div id="admHeroSection" class="adm-section">
+    <div style="padding:1.5rem 2.5rem 0;color:rgba(245,238,223,.5);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase">Incolla i link Cloudinary per le 6 foto dell'hero</div>
+    <div id="admHeroBody" style="padding:1.5rem 2.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem"></div>
+    <div style="padding:0 2.5rem 1.5rem;display:flex;justify-content:flex-end">
+      <button class="adm-save-all" id="admSaveHero">Salva Foto Hero</button>
     </div>
-    <div style="display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end">
-      <button class="adm-save-all" id="admAddProduct" style="background:transparent;border:1px solid rgba(200,164,110,.4);color:var(--gold)">+ Aggiungi Creazione</button>
-      <button class="adm-save-all" id="admSaveAll">Salva foto</button>
-      <button class="adm-save-all" id="admExport" style="background:transparent;border:1px solid rgba(100,200,150,.4);color:#7ec89a">⬇ Esporta HTML</button>
+  </div>
+
+  <!-- Sezione Collage (upload file) -->
+  <div id="admLogoSection" class="adm-section" style="display:none">
+    <div class="adm-body" id="admBody">
+      <!-- Le card vengono generate via JS -->
     </div>
+    <div class="adm-footer" style="border-top:none">
+      <div class="adm-tip">
+        🔒 Accesso: clicca <strong>5 volte</strong> sul logo in alto a sinistra
+      </div>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end">
+        <button class="adm-save-all" id="admAddProduct" style="background:transparent;border:1px solid rgba(200,164,110,.4);color:var(--gold)">+ Aggiungi Creazione</button>
+        <button class="adm-save-all" id="admSaveAll">Salva Collage</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="adm-footer" style="border-top:1px solid rgba(200,164,110,.1)">
+    <div class="adm-tip">🔒 Clicca 5 volte sul logo per aprire questo pannello</div>
   </div>
 </div>
 <div id="admToast"></div>
@@ -1759,14 +1787,112 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
   });
 
   // Apri/chiudi panel
+  // ═══ TAB SWITCHER ═══
+  window.admShowTab = function(tab) {
+    document.getElementById('admHeroSection').style.display = tab==='hero' ? '' : 'none';
+    document.getElementById('admLogoSection').style.display = tab==='logo' ? '' : 'none';
+    document.getElementById('tabHero').classList.toggle('on', tab==='hero');
+    document.getElementById('tabLogo').classList.toggle('on', tab==='logo');
+  };
+
+  // ═══ HERO URLS ═══
+  const HERO_LABELS = [
+    'Posizione 1 (grande, cerchio)',
+    'Posizione 2 (rettangolo sinistro)',
+    'Posizione 3 (cerchio centro)',
+    'Posizione 4 (rettangolo basso)',
+    'Posizione 5 (cerchio piccolo)',
+    'Posizione 6 (rettangolo piccolo)'
+  ];
+
+  async function loadHeroUrls() {
+    try {
+      const res = await fetch(SB_URL + '/rest/v1/hero_photos?select=*&order=posizione.asc', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      });
+      if(res.ok) return await res.json();
+    } catch(e) {}
+    return [];
+  }
+
+  async function saveHeroUrl(posizione, url) {
+    // Upsert: inserisce o aggiorna
+    await fetch(SB_URL + '/rest/v1/hero_photos', {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ posizione, url })
+    });
+  }
+
+  async function buildHeroAdmin() {
+    const body = document.getElementById('admHeroBody');
+    body.innerHTML = '<div style="color:rgba(245,238,223,.3);font-size:.8rem">Caricamento...</div>';
+    const existing = await loadHeroUrls();
+    const map = {};
+    existing.forEach(r => map[r.posizione] = r.url);
+
+    // Leggi anche i frame correnti dal DOM
+    const frames = document.querySelectorAll('.hc-frame img');
+
+    body.innerHTML = '';
+    HERO_LABELS.forEach((label, i) => {
+      const pos = i + 1;
+      const currentUrl = map[pos] || (frames[i] ? frames[i].src : '');
+      const div = document.createElement('div');
+      div.className = 'adm-hero-field';
+      div.innerHTML = `
+        <label>${label}</label>
+        <input type="url" id="heroUrl${pos}" placeholder="https://res.cloudinary.com/..." value="${currentUrl}">
+        ${currentUrl ? `<img class="adm-hero-preview" src="${currentUrl}" style="display:block" onerror="this.style.display='none'">` : '<img class="adm-hero-preview">'}
+      `;
+      // Preview on input
+      const inp = div.querySelector('input');
+      const prev = div.querySelector('img.adm-hero-preview');
+      inp.addEventListener('input', () => {
+        const v = inp.value.trim();
+        if(v) { prev.src = v; prev.style.display = 'block'; }
+        else prev.style.display = 'none';
+      });
+      body.appendChild(div);
+    });
+  }
+
+  document.getElementById('admSaveHero').addEventListener('click', async () => {
+    showToast('Salvataggio in corso...');
+    try {
+      for(let i = 0; i < 6; i++) {
+        const inp = document.getElementById('heroUrl' + (i+1));
+        if(inp) {
+          const url = inp.value.trim();
+          await saveHeroUrl(i+1, url);
+          // Aggiorna il DOM subito
+          const frames = document.querySelectorAll('.hc-frame img');
+          if(frames[i] && url) frames[i].src = url;
+        }
+      }
+      showToast('✓ Foto hero aggiornate!');
+    } catch(e) {
+      showToast('Errore: ' + e.message);
+    }
+  });
+
   function openAdmin(){
     pending = {};
     buildAdminCards();
+    buildHeroAdmin();
+    admShowTab('hero');
     document.getElementById('adminPanel').classList.add('open');
+    document.body.classList.add('admin-mode');
     document.body.style.overflow = 'hidden';
   }
   function closeAdmin(){
     document.getElementById('adminPanel').classList.remove('open');
+    document.body.classList.remove('admin-mode');
     document.body.style.overflow = '';
   }
   document.getElementById('admClose').addEventListener('click', closeAdmin);
@@ -1803,73 +1929,6 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
   // Trigger alternativo: tasto F2
   document.addEventListener('keydown', e=>{
     if(e.key === 'F2') openAdmin();
-  });
-
-  // ═══ ESPORTA HTML ═══
-  // Legge il sorgente via fetch e incorpora foto + catalogo direttamente nel codice
-  document.getElementById('admExport').addEventListener('click', ()=>{
-    showToast('Preparazione file...');
-    fetch(window.location.href)
-      .then(r => r.text())
-      .then(src => {
-        // Leggi dati attuali
-        const currentProducts = JSON.parse(localStorage.getItem('acv3') || '[]');
-
-        // 1. Rimuovi blocchi init precedenti
-        src = src.replace(/<script>\s*\/\* INIT_EMBED[\s\S]*?<\/script>/g, '');
-
-        // 2. Aggiorna DEFAULTS con prodotti attuali
-        if(currentProducts.length){
-          src = src.replace(
-            /const DEFAULTS\s*=\s*\[[\s\S]*?\];/,
-            'const DEFAULTS = ' + JSON.stringify(currentProducts) + ';'
-          );
-        }
-
-        // 3. Incorpora le foto come data URL direttamente nell'HTML
-        // Sostituisce ogni SVG placeholder con un tag <img> con src=dataURL
-        PRALINE_META.forEach((m, idx) => {
-          const dataUrl = saved[m.id];
-          if(dataUrl){
-            // Trova il frame corrispondente nel sorgente e aggiungi img inline
-            // Usiamo un marker nel sorgente: data-pid="p1" ecc
-            const marker = 'data-pid="' + m.id + '"';
-            if(src.includes(marker)){
-              // Inserisci img dopo il marker del frame
-              src = src.replace(
-                new RegExp('(id="mfc-' + m.id + '"[^>]*>)'),
-                '$1<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;position:absolute;inset:0" alt="">'
-              );
-            }
-          }
-        });
-
-        // 4. Aggiungi script init foto prima di </body>
-        const photosJson = JSON.stringify(saved);
-        const initBlock = '<script>/* INIT_EMBED */\n(function(){\n' +
-          '  var SK="ac_collage_v1";\n' +
-          '  var p=' + photosJson + ';\n' +
-          '  var idx=Object.keys(p);\n' +
-          '  try{\n' +
-          '    localStorage.setItem(SK+"_index",JSON.stringify(idx));\n' +
-          '    idx.forEach(function(k){localStorage.setItem(SK+"_"+k,p[k]);});\n' +
-          '  }catch(e){}\n' +
-          '})();\n<\/script>';
-        src = src.replace('</body>', initBlock + '\n</body>');
-
-        // 5. Scarica il file
-        const blob = new Blob([src], {type:'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'index.html';
-        document.body.appendChild(a); a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('✓ File pronto! Caricalo su GitHub.');
-      })
-      .catch(()=>{
-        showToast('⚠ Errore — apri il sito da atelier-cacao.com');
-      });
   });
 
 })();
