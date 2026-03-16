@@ -1971,7 +1971,7 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
     }, 200);
   });
 
-  function openAdmin(){
+  window.openAdmin = function openAdmin(){
     pending = {};
     buildAdminCards();
     buildHeroAdmin();
