@@ -1443,7 +1443,39 @@ function goToOrder(){
   if(s) window.scrollTo({top:s.getBoundingClientRect().top+scrollY-72,behavior:'smooth'});
 }
 
+
+// ═══ CARICA FOTO HERO DA SUPABASE ALL'AVVIO ═══
+async function initHeroPhotos() {
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/hero_photos?select=*&order=posizione.asc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    });
+    if(!res.ok) return;
+    const rows = await res.json();
+    if(!rows.length) return;
+    const frames = document.querySelectorAll('.hc-frame');
+    const cells = document.querySelectorAll('.mf-cell-photo');
+    rows.forEach(r => {
+      const i = r.posizione - 1;
+      if(i < 0 || i > 5 || !r.url) return;
+      // Aggiorna hero collage
+      if(frames[i]) {
+        let img = frames[i].querySelector('img');
+        if(!img) {
+          img = document.createElement('img');
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;position:absolute;inset:0';
+          frames[i].appendChild(img);
+        }
+        img.src = r.url;
+      }
+      // Aggiorna griglia filosofia
+      if(cells[i]) cells[i].src = r.url;
+    });
+  } catch(e) {}
+}
+
 initCatalog();
+initHeroPhotos();
 
 /* ═══ MODAL ═══ */
 const mbg=document.getElementById('mbg');
@@ -1578,13 +1610,14 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
 
   <!-- Sezione Collage (upload file) -->
   <div id="admLogoSection" class="adm-section" style="display:none">
-    <div style="padding:1.5rem 2.5rem 0;color:rgba(245,238,223,.5);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase">Inserisci i link Cloudinary per le foto del collage</div>
+    <div style="padding:1.5rem 2.5rem 0;color:rgba(245,238,223,.5);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase">Inserisci i link Cloudinary — salva per aggiornare il sito online</div>
     <div id="admCollageBody" style="padding:1.5rem 2.5rem;display:flex;flex-direction:column;gap:1rem;max-height:50vh;overflow-y:auto"></div>
     <div style="padding:0 2.5rem 1.5rem;display:flex;justify-content:flex-end">
       <button class="adm-save-all" id="admSaveCollage">&#x1F4BE; Salva Foto Collage</button>
     </div>
   </div>
 
+  
   <div class="adm-footer" style="border-top:1px solid rgba(200,164,110,.1)">
     <div class="adm-tip">🔒 Clicca 5 volte sul logo per aprire questo pannello</div>
   </div>
@@ -1849,31 +1882,37 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
   async function buildHeroAdmin() {
     const body = document.getElementById('admHeroBody');
     if(!body) return;
-    // Prima mostra subito i campi con i valori attuali dal DOM
+    // Mostra subito i 6 campi con valori dal DOM
     const frames = document.querySelectorAll('.hc-frame img');
-    const map = {};
-    // Poi prova a caricare da Supabase in background
+    let map = {};
+    // Prova a caricare da Supabase
     try {
-      const existing = await loadHeroUrls();
-      existing.forEach(r => map[r.posizione] = r.url);
+      const res = await fetch(SB_URL + '/rest/v1/hero_photos?select=*&order=posizione.asc', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      });
+      if(res.ok) {
+        const rows = await res.json();
+        rows.forEach(r => map[r.posizione] = r.url);
+      }
     } catch(e) {}
     body.innerHTML = '';
     HERO_LABELS.forEach((label, i) => {
       const pos = i + 1;
-      const currentUrl = map[pos] || (frames[i] ? frames[i].src : '');
+      const domUrl = frames[i] ? frames[i].src : '';
+      const currentUrl = map[pos] || domUrl;
       const div = document.createElement('div');
       div.className = 'adm-hero-field';
+      const safeUrl = currentUrl.replace(/"/g, '&quot;');
       div.innerHTML = `
         <label>${label}</label>
-        <input type="url" id="heroUrl${pos}" placeholder="https://res.cloudinary.com/..." value="${currentUrl}">
-        <img class="adm-hero-preview" src="${currentUrl}" style="${currentUrl ? 'display:block' : 'display:none'}" onerror="this.style.display='none'">
+        <input type="url" id="heroUrl${pos}" placeholder="https://res.cloudinary.com/..." value="${safeUrl}">
+        <img class="adm-hero-preview" src="${safeUrl}" style="${currentUrl ? 'display:block' : 'display:none'}" onerror="this.style.display='none'">
       `;
       const inp = div.querySelector('input');
       const prev = div.querySelector('img.adm-hero-preview');
       inp.addEventListener('input', () => {
         const v = inp.value.trim();
-        if(v) { prev.src = v; prev.style.display = 'block'; }
-        else prev.style.display = 'none';
+        prev.src = v; prev.style.display = v ? 'block' : 'none';
       });
       body.appendChild(div);
     });
