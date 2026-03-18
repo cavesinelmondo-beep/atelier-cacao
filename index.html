@@ -1879,29 +1879,24 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
     });
   }
 
-  async function buildHeroAdmin() {
+  function buildHeroAdmin() {
     const body = document.getElementById('admHeroBody');
     if(!body) return;
-    // Mostra subito i 6 campi con valori dal DOM
-    const frames = document.querySelectorAll('.hc-frame img');
-    let map = {};
-    // Prova a caricare da Supabase
-    try {
-      const res = await fetch(SB_URL + '/rest/v1/hero_photos?select=*&order=posizione.asc', {
-        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-      });
-      if(res.ok) {
-        const rows = await res.json();
-        rows.forEach(r => map[r.posizione] = r.url);
-      }
-    } catch(e) {}
+    
+    // STEP 1: Costruisce SUBITO i 6 campi con i valori hardcoded nel HTML
+    // Questo è sincrono — nessuna attesa, nessuna rete
+    const frames = document.querySelectorAll('.hc-frame');
     body.innerHTML = '';
+    
     HERO_LABELS.forEach((label, i) => {
       const pos = i + 1;
-      const domUrl = frames[i] ? frames[i].src : '';
-      const currentUrl = map[pos] || domUrl;
+      // Legge URL direttamente dall'img dentro il frame
+      const frameImg = frames[i] ? (frames[i].querySelector('.hc-real-photo') || frames[i].querySelector('img')) : null;
+      const currentUrl = (frameImg && frameImg.src && !frameImg.src.startsWith('data:')) ? frameImg.src : '';
+      
       const div = document.createElement('div');
       div.className = 'adm-hero-field';
+      div.id = 'hero-field-' + pos;
       const safeUrl = currentUrl.replace(/"/g, '&quot;');
       div.innerHTML = `
         <label>${label}</label>
@@ -1916,6 +1911,22 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
       });
       body.appendChild(div);
     });
+    
+    // STEP 2: Aggiorna i valori da Supabase in background
+    // Non blocca il rendering — aggiorna solo i value degli input già visibili
+    fetch(SB_URL + '/rest/v1/hero_photos?select=*&order=posizione.asc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    }).then(r => r.ok ? r.json() : []).then(rows => {
+      rows.forEach(r => {
+        if(!r.url || !r.url.trim()) return;
+        const inp = document.getElementById('heroUrl' + r.posizione);
+        const prev = inp ? inp.nextElementSibling : null;
+        if(inp) {
+          inp.value = r.url;
+          if(prev && prev.tagName === 'IMG') { prev.src = r.url; prev.style.display = 'block'; }
+        }
+      });
+    }).catch(() => {});
   }
 
   document.getElementById('admSaveHero').addEventListener('click', async () => {
@@ -2186,17 +2197,4 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
   }
   function checkHash(){
     if(window.location.hash === '#admin'){
-      window.history.replaceState(null,'',window.location.pathname);
-      setTimeout(tryOpen, 500);
-    }
-  }
-  window.addEventListener('hashchange', checkHash);
-  document.addEventListener('DOMContentLoaded', checkHash);
-})();
-</script>
-<script>
-(function(){
-  function tryOpenAdmin(){
-    if(typeof window.openAdmin === 'function') { window.openAdmin(); return; }
-    var p = document.getElementById('adminPanel');
-    if(p){ p.classList.add('open'); document.
+      window.history.replaceState(null,'',window.location
