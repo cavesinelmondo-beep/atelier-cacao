@@ -1848,14 +1848,15 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
 
   async function buildHeroAdmin() {
     const body = document.getElementById('admHeroBody');
-    body.innerHTML = '<div style="color:rgba(245,238,223,.3);font-size:.8rem">Caricamento...</div>';
-    const existing = await loadHeroUrls();
-    const map = {};
-    existing.forEach(r => map[r.posizione] = r.url);
-
-    // Leggi anche i frame correnti dal DOM
+    if(!body) return;
+    // Prima mostra subito i campi con i valori attuali dal DOM
     const frames = document.querySelectorAll('.hc-frame img');
-
+    const map = {};
+    // Poi prova a caricare da Supabase in background
+    try {
+      const existing = await loadHeroUrls();
+      existing.forEach(r => map[r.posizione] = r.url);
+    } catch(e) {}
     body.innerHTML = '';
     HERO_LABELS.forEach((label, i) => {
       const pos = i + 1;
@@ -1865,9 +1866,8 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
       div.innerHTML = `
         <label>${label}</label>
         <input type="url" id="heroUrl${pos}" placeholder="https://res.cloudinary.com/..." value="${currentUrl}">
-        ${currentUrl ? `<img class="adm-hero-preview" src="${currentUrl}" style="display:block" onerror="this.style.display='none'">` : '<img class="adm-hero-preview">'}
+        <img class="adm-hero-preview" src="${currentUrl}" style="${currentUrl ? 'display:block' : 'display:none'}" onerror="this.style.display='none'">
       `;
-      // Preview on input
       const inp = div.querySelector('input');
       const prev = div.querySelector('img.adm-hero-preview');
       inp.addEventListener('input', () => {
