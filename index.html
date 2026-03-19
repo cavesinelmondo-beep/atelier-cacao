@@ -176,12 +176,12 @@ header.solid{background:rgba(18,52,60,.95);backdrop-filter:blur(24px);border-bot
 @keyframes hcf6{from{transform:translateY(0) rotate(2deg)}to{transform:translateY(-16px) rotate(-3deg)}}
 
 /* Etichetta "foto reale disponibile" — visibile solo in modalità dev */
-.hc-frame[data-label]::after{
-  content:attr(data-label);position:absolute;bottom:0;left:0;right:0;
-  font-family:var(--sans);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;
-  padding:.3rem .5rem;background:rgba(0,0,0,.6);color:rgba(255,255,255,.5);
-  text-align:center;
-}
+/* hc-frame labels removed */
+
+/* Nasconde etichette debug sui frame */
+.hc-frame::after { display:none !important; content:none !important; }
+.hc-frame[data-label]::after { display:none !important; }
+
 
 /* lato sinistro verticale */
 .h-side{position:absolute;bottom:9rem;font-size:.56rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(245,238,223,.22);writing-mode:vertical-rl;z-index:2}
@@ -767,27 +767,27 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
   -->
   <div class="h-collage" aria-hidden="true">
 
-    <div class="hc-frame" data-label="palline">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_400,h_400,c_fill,q_auto,f_auto/palline_pyfiww.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
-    <div class="hc-frame" data-label="rose">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_320,h_400,c_fill,q_auto,f_auto/dbefc885-7db7-422b-9461-1d1ba2834f09_yfass8.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
-    <div class="hc-frame" data-label="caramello">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_280,h_280,c_fill,q_auto,f_auto/caramello_salato_ietj72.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
-    <div class="hc-frame" data-label="girasole">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_240,h_300,c_fill,q_auto,f_auto/0ad9dd24-ef02-4533-9da3-4a0a2e73179e_obhijr.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
-    <div class="hc-frame" data-label="trifoglio">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_200,h_200,c_fill,q_auto,f_auto/4360737f-4b7e-4117-a540-13591c08f3e3_swclht.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
-    <div class="hc-frame" data-label="tavoletta">
+    <div class="hc-frame">
       <img src="https://res.cloudinary.com/dq9i4edrd/image/upload/w_180,h_220,c_fill,q_auto,f_auto/39570121-1673-47f1-9d44-21574872084e_w0qegz.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit">
     </div>
 
@@ -1142,7 +1142,7 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
           <svg width="15" height="11" viewBox="0 0 18 12" fill="none"><path d="M0 6h16M10 1l6 5-6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
         </button>
         <div class="fok" id="fOk"><span>✦</span> Messaggio ricevuto! Ti risponderemo entro 24 ore.</div>
-        <div class="fko" id="fKo">Errore. Scrivici a <a href="mailto:ateliercacao.lab@gmail.com" style="color:inherit;text-decoration:underline">ateliercacao.lab@gmail.com</a></div>
+        <div class="fko" id="fKo">Errore. Scrivici a <a href="/cdn-cgi/l/email-protection#016075646d686473626062606e2f6d606341666c60686d2f626e6c" style="color:inherit;text-decoration:underline"><span class="__cf_email__" data-cfemail="7a1b0e1f16131f08191b191b1554161b183a1d171b131654191517">[email&#160;protected]</span></a></div>
       </form>
     </div>
 
@@ -1168,9 +1168,9 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
             <div class="soc-ico"><svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
             <div class="soc-lbl"><strong>WhatsApp</strong><span>+39 338 838 8624</span></div>
           </a>
-          <a href="mailto:ateliercacao.lab@gmail.com" class="soc-a s-em">
+          <a href="/cdn-cgi/l/email-protection#adccd9c8c1c4c8dfceccceccc283c1cccfedcac0ccc4c183cec2c0" class="soc-a s-em">
             <div class="soc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></div>
-            <div class="soc-lbl"><strong>Email</strong><span>ateliercacao.lab@gmail.com</span></div>
+            <div class="soc-lbl"><strong>Email</strong><span><span class="__cf_email__" data-cfemail="2e4f5a4b42474b5c4d4f4d4f4100424f4c6e49434f4742004d4143">[email&#160;protected]</span></span></div>
           </a>
         </div>
       </div>
@@ -1226,7 +1226,7 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
   <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 10V1M1 5.5l4.5-4.5 4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
 </button>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* LOADER */
 window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('gone'),1900));
 
@@ -1457,21 +1457,27 @@ async function initHeroPhotos() {
     const cells = document.querySelectorAll('.mf-cell-photo');
     rows.forEach(r => {
       const i = r.posizione - 1;
-      if(i < 0 || i > 5 || !r.url) return;
+      if(i < 0 || i > 5 || !r.url || !r.url.trim()) return;
+      const url = r.url.trim();
       // Aggiorna hero collage
       if(frames[i]) {
-        let img = frames[i].querySelector('img');
+        let img = frames[i].querySelector('.hc-real-photo') || frames[i].querySelector('img');
         if(!img) {
           img = document.createElement('img');
+          img.className = 'hc-real-photo';
           img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;position:absolute;inset:0';
           frames[i].appendChild(img);
         }
-        img.src = r.url;
+        img.src = url;
+        img.style.display = 'block';
       }
-      // Aggiorna griglia filosofia
-      if(cells[i]) cells[i].src = r.url;
+      // Aggiorna griglia filosofia — usa lo stesso URL
+      if(cells[i]) {
+        cells[i].src = url;
+        cells[i].style.display = 'block';
+      }
     });
-  } catch(e) {}
+  } catch(e) { console.log('initHeroPhotos error:', e); }
 }
 
 initCatalog();
@@ -2085,7 +2091,7 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
           if(!img) { img = document.createElement('img'); img.className = 'hc-real-photo'; img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;'; frames[i].appendChild(img); }
           img.src = url;
         }
-        if(cells[i] && url) cells[i].src = url;
+        if(cells[i]) cells[i].src = url;
       }
       showToast('✓ Foto collage salvate!');
     } catch(e) { showToast('Errore: ' + e.message); }
