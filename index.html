@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Atelier Cacao v6 – Creazioni Artigianali</title>
+  <title>Atelier Cacao v7 – Creazioni Artigianali</title>
   <meta name="description" content="Atelier Cacao crea creazioni artigianali di cioccolato con ingredienti premium selezionati. Ogni creazione è un'emozione unica, fatta a mano a Seveso."/>
   <meta property="og:title" content="Atelier Cacao – Creazioni Artigianali"/>
   <meta property="og:description" content="Creazioni di cioccolato artigianali. Ingredienti d'eccellenza, fatto a mano a Seveso."/>
@@ -65,6 +65,10 @@ p{line-height:1.85;font-weight:300;color:var(--text-d)}
 .rev.in{opacity:1;transform:none}
 .rev-l{opacity:0;transform:translateX(-28px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
 .rev-l.in{opacity:1;transform:none}
+/* Fallback: se JS non attiva l'animazione, mostra comunque */
+@media (prefers-reduced-motion: reduce) {
+  .rev,.rev-l{opacity:1;transform:none}
+}
 
 /* ═══════════════════════════════════════════
    LOADER
@@ -262,6 +266,7 @@ header.solid{background:rgba(18,52,60,.95);backdrop-filter:blur(24px);border-bot
   border-radius:10px;
   background:rgba(0,0,0,.25);
   aspect-ratio:1;
+  min-height:100px;
   display:flex;align-items:center;justify-content:center;
 }
 /* cella grande in alto a sinistra — occupa 2 righe */
@@ -1142,7 +1147,7 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
           <svg width="15" height="11" viewBox="0 0 18 12" fill="none"><path d="M0 6h16M10 1l6 5-6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
         </button>
         <div class="fok" id="fOk"><span>✦</span> Messaggio ricevuto! Ti risponderemo entro 24 ore.</div>
-        <div class="fko" id="fKo">Errore. Scrivici a <a href="mailto:ateliercacao.lab@gmail.com" style="color:inherit;text-decoration:underline">ateliercacao.lab@gmail.com</a></div>
+        <div class="fko" id="fKo">Errore. Scrivici a <a id="emailErrLink" href="#" style="color:inherit;text-decoration:underline"></a></div>
       </form>
     </div>
 
@@ -1168,7 +1173,7 @@ footer{background:var(--bg);border-top:1px solid var(--border)}
             <div class="soc-ico"><svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
             <div class="soc-lbl"><strong>WhatsApp</strong><span>+39 338 838 8624</span></div>
           </a>
-          <a href="mailto:ateliercacao.lab@gmail.com" class="soc-a s-em">
+          <a id="emailSocLink" href="mailto:ateliercacao.lab@gmail.com" class="soc-a s-em">
             <div class="soc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></div>
             <div class="soc-lbl"><strong>Email</strong><span>ateliercacao.lab@gmail.com</span></div>
           </a>
@@ -1259,6 +1264,8 @@ window.addEventListener('scroll',()=>document.getElementById('hdr').classList.to
 (function(){
   const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}}),{threshold:.1,rootMargin:'0px 0px -55px 0px'});
   document.querySelectorAll('.rev,.rev-l').forEach(el=>obs.observe(el));
+  // Fallback: attiva tutti dopo 2s nel caso l'observer non funzioni
+  setTimeout(()=>document.querySelectorAll('.rev,.rev-l').forEach(el=>el.classList.add('in')), 2000);
 })();
 
 /* SMOOTH SCROLL */
@@ -2214,6 +2221,26 @@ document.getElementById('pForm').addEventListener('submit',async function(e){
   }
   window.addEventListener('hashchange', checkHash);
   document.addEventListener('DOMContentLoaded', checkHash);
+})();
+</script>
+<script>
+// Email via JS — non cifrabile da GitHub Pages/Cloudflare
+(function(){
+  var u='ateliercacao.lab';
+  var d='gmail.com';
+  var e=u+'@'+d;
+  var m='mailto:'+e;
+  document.addEventListener('DOMContentLoaded', function(){
+    var el=document.getElementById('emailErrLink');
+    if(el){el.href=m;el.textContent=e;}
+    var sl=document.getElementById('emailSocLink');
+    if(sl){sl.href=m;}
+    var ss=document.getElementById('emailSocSpan');
+    if(ss){ss.textContent=e;}
+    document.querySelectorAll('a[href*="cdn-cgi"]').forEach(function(a){
+      a.href=m;if(!a.querySelector('div'))a.textContent=e;
+    });
+  });
 })();
 </script>
 </body>
